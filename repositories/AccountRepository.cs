@@ -1,0 +1,47 @@
+﻿using Bank_business.entities;
+using Bank_business.Entities;
+using Microsoft.Data.Sqlite;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Bank_business.repositories
+{
+    internal class AccountRepository
+    {
+        string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
+
+        public Account findAccountById(int id)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                Console.WriteLine("connected");
+                var selectCmd = connection.CreateCommand();
+                selectCmd.CommandText = "SELECT a.id, a.deposit, a.user_id FROM Account a WHERE id = @id";
+                selectCmd.Parameters.AddWithValue("@id", id);
+
+                using var reader = selectCmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    var read_id = reader.GetInt32(0);
+                    var read_deposit = reader.GetDouble(1);
+                    var read_user_id = reader.GetInt32(2);
+
+                    return new Account(read_id, read_deposit, read_user_id);
+                }
+                else
+                {
+                    throw new KeyNotFoundException($"Account with id {id} not found");
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException($"Database error while finding account: {ex.Message}", ex);
+            }
+        }
+    }
+}

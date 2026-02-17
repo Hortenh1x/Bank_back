@@ -1,0 +1,23 @@
+CREATE TABLE "Account" (
+	"id"	INTEGER NOT NULL,
+	"deposit"	NUMERIC NOT NULL,
+	"user_id"	INTEGER NOT NULL,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+
+CREATE TABLE "Transaction" (
+	"id"	INTEGER NOT NULL,
+	"date_time"	TEXT NOT NULL,
+	"deposit"	NUMERIC NOT NULL,
+	"from_id"	INTEGER NOT NULL,
+	"to_id"	INTEGER NOT NULL,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+
+CREATE TABLE "User" (
+	"id"	INTEGER NOT NULL,
+	"first_name"	TEXT NOT NULL,
+	"last_name"	TEXT NOT NULL,
+	"password_hash"	INTEGER NOT NULL,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
