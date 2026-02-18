@@ -14,14 +14,16 @@ namespace Bank_business.entities
         private double deposit;
         private int from_id;
         private int to_id;
+        private TransactionType type;
 
-        public Transaction(int id, string date_t, double deposit, int from_id, int to_id)
+        public Transaction(int id, string date_time, double deposit, int from_id, int to_id, TransactionType type)
         {
             this.id = id;
-            this.date_time = date_t;
+            this.date_time = date_time;
             this.deposit = deposit;
             this.from_id = from_id;
             this.to_id = to_id;
+            this.type = type;
         }
 
         public int Id
@@ -53,5 +55,18 @@ namespace Bank_business.entities
             get { return to_id; }
             set { to_id = value; }
         }
+
+        public TransactionType Type
+        {
+            get { return type; }
+            set { type = value; }
+        }
     }
+}
+
+enum TransactionType
+{
+    Deposit,
+    Withdrawal,
+    Transfer
 }

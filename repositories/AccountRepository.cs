@@ -70,61 +70,36 @@ namespace Bank_business.repositories
             }
         }
 
-        public double updateBalance(int id, double transfer)
+        public double updateBalance(int id, double transfer, SqliteConnection connection, SqliteTransaction transaction)
         {
-            try
-            {
-                using var connection = new SqliteConnection(connectionString);
-                connection.Open();
-                Console.WriteLine("connected");
-                var selectCmd = connection.CreateCommand();
-                selectCmd.CommandText = "SELECT a.id, a.deposit FROM Account a WHERE id = @id";
-                selectCmd.Parameters.AddWithValue("@id", id);
+            // 1. Get current balance using the shared connection
+            var selectCmd = connection.CreateCommand();
+            selectCmd.Transaction = transaction;
+            selectCmd.CommandText = "SELECT deposit FROM Account WHERE id = @id";
+            selectCmd.Parameters.AddWithValue("@id", id);
 
-                using var reader = selectCmd.ExecuteReader();
-                if (reader.Read())
-                {
-                    var read_id = reader.GetInt32(0);
-                    var read_deposit = reader.GetDouble(1);
+            var result = selectCmd.ExecuteScalar();
+            if (result == null) throw new KeyNotFoundException($"Account {id} not found");
 
-                    if (read_id != id)
-                    {
-                        throw new KeyNotFoundException("Account ids don't match");
-                    }
-                    else
-                    {
-                        if (read_deposit + transfer > 0)
-                        {
-                            read_deposit += transfer;
-                            try
-                            {
-                                var updateCmd = connection.CreateCommand();
-                                updateCmd.CommandText = "UPDATE Account SET deposit = @read_deposit WHERE id = @id";
-                                updateCmd.Parameters.AddWithValue("@read_deposit", read_deposit);
-                                updateCmd.Parameters.AddWithValue("@id", id);
-                                updateCmd.ExecuteNonQuery();
-                                return read_deposit;
-                            }
-                            catch (SqliteException ex)
-                            {
-                                throw new InvalidOperationException($"Database error while updating account: {ex.Message}", ex);
-                            }
-                        }
-                        else
-                        {
-                            throw new ArgumentException("Insuficient funds");
-                        }
-                    }
-                }
-                else
-                {
-                    throw new KeyNotFoundException($"Account with id {id} not found");
-                }
-            }
-            catch (SqliteException ex)
+            double currentDeposit = Convert.ToDouble(result);
+            double newDeposit = currentDeposit + transfer;
+
+            // 2. Business Logic Check
+            if (newDeposit < 0)
             {
-                throw new InvalidOperationException($"Database error while finding account: {ex.Message}", ex);
+                throw new ArgumentException("Insufficient funds");
             }
+
+            // 3. Update the database using the shared connection
+            var updateCmd = connection.CreateCommand();
+            updateCmd.Transaction = transaction;
+            updateCmd.CommandText = "UPDATE Account SET deposit = @read_deposit WHERE id = @id";
+            updateCmd.Parameters.AddWithValue("@read_deposit", newDeposit);
+            updateCmd.Parameters.AddWithValue("@id", id);
+
+            updateCmd.ExecuteNonQuery();
+
+            return newDeposit;
         }
     }
 }

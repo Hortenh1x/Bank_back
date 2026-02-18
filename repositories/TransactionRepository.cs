@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
+using Transaction = Bank_business.entities.Transaction;
 
 namespace Bank_business.repositories
 {
@@ -31,8 +33,9 @@ namespace Bank_business.repositories
                     var read_deposit = reader.GetDouble(2);
                     var read_from_id = reader.GetInt32(3);
                     var read_to_id = reader.GetInt32(4);
+                    var read_type = (TransactionType)Enum.Parse(typeof(TransactionType), reader.GetString(5));
 
-                    return new Transaction(read_id, read_date_time, read_deposit, read_from_id, read_to_id);
+                    return new Transaction(read_id, read_date_time, read_deposit, read_from_id, read_to_id, read_type);
                 }
                 else
                 {
@@ -45,44 +48,44 @@ namespace Bank_business.repositories
             }
         }
 
-        public Transaction saveTransaction(Transaction transaction)
+        public Transaction saveTransaction(double deposit, int from_id, int to_id, TransactionType type, SqliteConnection connection, SqliteTransaction dbTransaction)
         {
             try
             {
-                using var connection = new SqliteConnection(connectionString);
-                connection.Open();
-                Console.WriteLine("connected");
                 var insertCmd = connection.CreateCommand();
+                insertCmd.Transaction = dbTransaction;
+
+                string timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
                 insertCmd.CommandText = @"
-                    INSERT INTO [Transaction] (id, date_time, deposit, from_id, to_id) 
-                    VALUES (@id, @date_time, @deposit, @from_id, @to_id) 
+                    INSERT INTO [Transaction] (date_time, deposit, from_id, to_id, type) 
+                    VALUES (@date_time, @deposit, @from_id, @to_id, @type)
                     RETURNING id, date_time, deposit, from_id, to_id;";
 
-                insertCmd.Parameters.AddWithValue("@id", transaction.Id);
-                insertCmd.Parameters.AddWithValue("@date_time", transaction.Date_time);
-                insertCmd.Parameters.AddWithValue("@deposit", transaction.Deposit);
-                insertCmd.Parameters.AddWithValue("@from_id", transaction.From_id);
-                insertCmd.Parameters.AddWithValue("@to_id", transaction.To_id);
+                insertCmd.Parameters.AddWithValue("@date_time", timestamp);
+                insertCmd.Parameters.AddWithValue("@deposit", deposit);
+                insertCmd.Parameters.AddWithValue("@from_id", from_id);
+                insertCmd.Parameters.AddWithValue("@to_id", to_id);
+                insertCmd.Parameters.AddWithValue("@type", type.ToString());
 
                 using var reader = insertCmd.ExecuteReader();
                 if (reader.Read())
                 {
-                    var read_id = reader.GetInt32(0);
-                    var read_date_time = reader.GetString(1);
-                    var read_deposit = reader.GetDouble(2);
-                    var read_from_id = reader.GetInt32(3);
-                    var read_to_id = reader.GetInt32(4);
+                    return new Transaction(
+                        reader.GetInt32(0),
+                        reader.GetString(1),
+                        reader.GetDouble(2),
+                        reader.GetInt32(3),
+                        reader.GetInt32(4),
+                        (TransactionType)Enum.Parse(typeof(TransactionType), reader.GetString(5))
+                    );
+                }
 
-                    return new Transaction(read_id, read_date_time, read_deposit, read_from_id, read_to_id);
-                }
-                else
-                {
-                    throw new KeyNotFoundException($"Failed to create transaction record");
-                }
+                throw new InvalidOperationException("Failed to create transaction record.");
             }
             catch (SqliteException ex)
             {
-                throw new InvalidOperationException($"Database error while creating transaction: {ex.Message}", ex);
+                throw new InvalidOperationException($"Database error: {ex.Message}", ex);
             }
         }
     }

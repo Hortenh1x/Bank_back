@@ -115,5 +115,10 @@ namespace Bank_business.repositories
                 throw new InvalidOperationException($"Database error while creating user: {ex.Message}", ex);
             }
         }
+
+        public int getUserId()
+        {
+            return 0; //later: retrieve user id from the session
+        }
     }
 }
