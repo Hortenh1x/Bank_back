@@ -5,7 +5,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bank_business.entities
+namespace Bank_back.entities
 {
     internal class Transaction
     {

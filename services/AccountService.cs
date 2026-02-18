@@ -1,11 +1,11 @@
-﻿using Bank_business.entities;
-using Bank_business.repositories;
+﻿using Bank_back.entities;
+using Bank_back.repositories;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Globalization;
-using Transaction = Bank_business.entities.Transaction;
+using Transaction = Bank_back.entities.Transaction;
 
-namespace Bank_business.Services
+namespace Bank_back.Services
 {
     internal class AccountService
     {
@@ -85,6 +85,11 @@ namespace Bank_business.Services
                 dbTransaction.Rollback();
                 throw;
             }
+        }
+
+        public double checkBalance(int id)
+        {
+            return accountRepository.checkBalance(id);
         }
     }
 }

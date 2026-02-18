@@ -1,5 +1,5 @@
-﻿using Bank_business.entities;
-using Bank_business.Entities;
+﻿using Bank_back.entities;
+using Bank_back.Entities;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bank_business.repositories
+namespace Bank_back.repositories
 {
     internal class AccountRepository
     {

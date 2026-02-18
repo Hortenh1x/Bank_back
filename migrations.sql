@@ -11,6 +11,7 @@ CREATE TABLE "Transaction" (
 	"deposit"	NUMERIC NOT NULL,
 	"from_id"	INTEGER NOT NULL,
 	"to_id"	INTEGER NOT NULL,
+	"type"	TEXT NOT NULL,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
 

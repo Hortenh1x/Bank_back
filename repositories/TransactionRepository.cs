@@ -1,4 +1,4 @@
-﻿using Bank_business.entities;
+﻿using Bank_back.entities;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
-using Transaction = Bank_business.entities.Transaction;
+using Transaction = Bank_back.entities.Transaction;
 
-namespace Bank_business.repositories
+namespace Bank_back.repositories
 {
     internal class TransactionRepository
     {

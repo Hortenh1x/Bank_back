@@ -1,5 +1,5 @@
-﻿using Bank_business.entities;
-using Bank_business.repositories;
+﻿using Bank_back.entities;
+using Bank_back.repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -8,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Bank_business.Services
+namespace Bank_back.Services
 {
     internal class AuthService
     {
@@ -24,7 +24,7 @@ namespace Bank_business.Services
             _configuration = configuration;
         }
 
-        public  string LoginAsync(int id, string password_hash)
+        public  string Login(int id, string password_hash)
         {
             // 1. Verify user exists and password matches
             var user = _userRepository.findUserById(id);

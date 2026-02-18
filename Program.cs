@@ -1,8 +1,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Bank_business.repositories;
-using Bank_business.Services;
+using Bank_back.repositories;
+using Bank_back.Services;
 
 namespace Bank_back
 {
@@ -12,21 +12,18 @@ namespace Bank_back
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. REGISTER YOUR SERVICES (Dependency Injection)
-            // We use 'Scoped' so a new instance is created per HTTP request
+            //use 'Scoped' so a new instance is created per HTTP request
             builder.Services.AddScoped<UserRepository>();
             builder.Services.AddScoped<AuthService>();
 
-            // 2. CONFIGURE JWT AUTHENTICATION
             var jwtSettings = builder.Configuration.GetSection("ApplicationSettings");
             var secretKey = jwtSettings.GetValue<string>("JWT_Secret");
 
             if (string.IsNullOrEmpty(secretKey))
             {
-                throw new Exception("JWT Secret is missing from appsettings.json!");
+                throw new Exception("JWT Secret is missing from appsettings.json");
             }
 
-            // Add services to the container.
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -50,12 +47,12 @@ namespace Bank_back
             builder.Services.AddAuthorization();
 
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
             builder.Services.AddOpenApi();
 
             var app = builder.Build();
 
-            // 3. MIDDLEWARE ORDER (This part is critical!)
+            // 3. MIDDLEWARE ORDER
             app.UseHttpsRedirection();
 
             // Authentication must come BEFORE Authorization

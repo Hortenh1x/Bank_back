@@ -3,16 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Bank_business.Entities;
-using Bank_business.entities;
+using Bank_back.Entities;
+using Bank_back.entities;
 using Microsoft.Data.Sqlite;
-using Bank_business.services;
+using Bank_back.services;
 
-namespace Bank_business.repositories
+namespace Bank_back.repositories
 {
     internal class UserRepository
     {
         string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
+        private readonly UserService userService;
+
+        public UserRepository(UserService userService)
+        {
+            this.userService = userService;
+        }
 
         public User findUserById(int id)
         {
@@ -118,7 +124,7 @@ namespace Bank_business.repositories
 
         public int getUserId()
         {
-            return 0; //later: retrieve user id from the session
+            return userService.getUserId();
         }
     }
 }

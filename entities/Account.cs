@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bank_business.Entities
+namespace Bank_back.Entities
 {
     internal class Account
     {
