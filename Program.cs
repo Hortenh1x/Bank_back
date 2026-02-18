@@ -15,6 +15,8 @@ namespace Bank_back
             //use 'Scoped' so a new instance is created per HTTP request
             builder.Services.AddScoped<UserRepository>();
             builder.Services.AddScoped<AuthService>();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             var jwtSettings = builder.Configuration.GetSection("ApplicationSettings");
             var secretKey = jwtSettings.GetValue<string>("JWT_Secret");

@@ -14,7 +14,7 @@ namespace Bank_back.repositories
     {
         string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
 
-        public Transaction findTransactionById(int id)
+        public Transaction FindTransactionById(int id)
         {
             try
             {
@@ -48,7 +48,7 @@ namespace Bank_back.repositories
             }
         }
 
-        public Transaction saveTransaction(double deposit, int from_id, int to_id, TransactionType type, SqliteConnection connection, SqliteTransaction dbTransaction)
+        public Transaction SaveTransaction(double deposit, int from_id, int to_id, TransactionType type, SqliteConnection connection, SqliteTransaction dbTransaction)
         {
             try
             {

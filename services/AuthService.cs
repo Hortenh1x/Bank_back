@@ -24,10 +24,10 @@ namespace Bank_back.Services
             _configuration = configuration;
         }
 
-        public  string Login(int id, string password_hash)
+        public string Login(int id, string password_hash)
         {
             // 1. Verify user exists and password matches
-            var user = _userRepository.findUserById(id);
+            var user = _userRepository.FindUserById(id);
 
             if (user == null || user.Password_hash != password_hash)
             {

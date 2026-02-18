@@ -18,7 +18,7 @@ namespace Bank_back.services
             this.transactionRepository = transactionRepository;
         }
 
-        public Transaction performTransaction(int to_id, double amount, int from_id)
+        public Transaction PerformTransaction(int to_id, double amount, int from_id)
         {
             using var connection = new SqliteConnection(@"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db");
 
@@ -32,11 +32,11 @@ namespace Bank_back.services
 
             try
             {
-                accountRepository.updateBalance(to_id, amount, connection, transaction);
-                accountRepository.updateBalance(from_id, -amount, connection, transaction);
+                accountRepository.UpdateBalance(to_id, amount, connection, transaction);
+                accountRepository.UpdateBalance(from_id, -amount, connection, transaction);
                 var type = TransactionType.Transfer;
 
-                var savedResult = transactionRepository.saveTransaction(amount, from_id, to_id, type, connection, transaction);
+                var savedResult = transactionRepository.SaveTransaction(amount, from_id, to_id, type, connection, transaction);
 
                 transaction.Commit();
 

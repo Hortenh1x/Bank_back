@@ -6,21 +6,16 @@ using System.Threading.Tasks;
 using Bank_back.Entities;
 using Bank_back.entities;
 using Microsoft.Data.Sqlite;
-using Bank_back.services;
 
 namespace Bank_back.repositories
 {
     internal class UserRepository
     {
         string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
-        private readonly UserService userService;
 
-        public UserRepository(UserService userService)
-        {
-            this.userService = userService;
-        }
+        public UserRepository() { }
 
-        public User findUserById(int id)
+        public User FindUserById(int id)
         {
             try
             {
@@ -51,7 +46,7 @@ namespace Bank_back.repositories
             }
         }
         
-        public bool existsByUserId(int id)
+        public bool ExistsByUserId(int id)
         {
             try
             {
@@ -87,7 +82,7 @@ namespace Bank_back.repositories
             }
         }
 
-        public User saveUser(User user)
+        public User SaveUser(User user)
         {
             try
             {
@@ -120,11 +115,6 @@ namespace Bank_back.repositories
             {
                 throw new InvalidOperationException($"Database error while creating user: {ex.Message}", ex);
             }
-        }
-
-        public int getUserId()
-        {
-            return userService.getUserId();
         }
     }
 }

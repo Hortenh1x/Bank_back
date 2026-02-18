@@ -11,17 +11,15 @@ namespace Bank_back.Services
     {
         private readonly AccountRepository accountRepository;
         private readonly TransactionRepository transactionRepository;
-        private readonly UserRepository userRepository;
         DateTime utcDate = DateTime.UtcNow;
 
-        public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository, UserRepository userRepository)
+        public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository)
         {
             this.accountRepository = accountRepository;
             this.transactionRepository = transactionRepository;
-            this.userRepository = userRepository;
         }
 
-        public double performDeposit(int to_id, double amount)
+        public double PerformDeposit(int to_id, double amount)
         {
             if (amount <= 0)
             {
@@ -34,14 +32,14 @@ namespace Bank_back.Services
 
             try
             {
-                double newBalance = accountRepository.updateBalance(to_id, amount, connection, dbTransaction);
+                double newBalance = accountRepository.UpdateBalance(to_id, amount, connection, dbTransaction);
 
                 string timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-                int from_id = userRepository.getUserId();
+                int from_id = to_id;
 
                 var type = TransactionType.Deposit;
 
-                transactionRepository.saveTransaction(amount, from_id, to_id, type, connection, dbTransaction);
+                transactionRepository.SaveTransaction(amount, from_id, to_id, type, connection, dbTransaction);
 
                 dbTransaction.Commit();
 
@@ -54,7 +52,7 @@ namespace Bank_back.Services
             }
         }
 
-        public double performWithdrawal(int to_id, double amount)
+        public double PerformWithdrawal(int to_id, double amount)
         {
             if (amount <= 0)
             {
@@ -67,14 +65,14 @@ namespace Bank_back.Services
 
             try
             {
-                double newBalance = accountRepository.updateBalance(to_id, -amount, connection, dbTransaction);
+                double newBalance = accountRepository.UpdateBalance(to_id, -amount, connection, dbTransaction);
 
                 string timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-                int from_id = userRepository.getUserId();
+                int from_id = to_id;
 
                 var type = TransactionType.Withdrawal;
 
-                transactionRepository.saveTransaction(-amount, from_id, to_id, type, connection, dbTransaction);
+                transactionRepository.SaveTransaction(-amount, from_id, to_id, type, connection, dbTransaction);
 
                 dbTransaction.Commit();
 
@@ -87,9 +85,14 @@ namespace Bank_back.Services
             }
         }
 
-        public double checkBalance(int id)
+        public double CheckBalance(int id)
         {
-            return accountRepository.checkBalance(id);
+            return accountRepository.CheckBalance(id);
+        }
+
+        public bool AccountExists(int id)
+        {
+            return accountRepository.ExistsByAccountId(id);
         }
     }
 }

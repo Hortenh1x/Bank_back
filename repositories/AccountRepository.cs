@@ -13,7 +13,7 @@ namespace Bank_back.repositories
     {
         string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
 
-        public Account findAccountById(int id)
+        public Account FindAccountById(int id)
         {
             try
             {
@@ -43,7 +43,43 @@ namespace Bank_back.repositories
                 throw new InvalidOperationException($"Database error while finding account: {ex.Message}", ex);
             }
         }
-        public double checkBalance(int id)
+
+        public bool ExistsById(int id)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                Console.WriteLine("connected");
+                var selectCmd = connection.CreateCommand();
+                selectCmd.CommandText = "SELECT a.id FROM Account a WHERE id = @id";
+                selectCmd.Parameters.AddWithValue("@id", id);
+
+                using var reader = selectCmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    var read_id = reader.GetInt32(0);
+                    if (read_id == id)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException($"Database error while checking account existence: {ex.Message}", ex);
+            }
+        }
+        public double CheckBalance(int id)
         {
             try
             {
@@ -70,7 +106,7 @@ namespace Bank_back.repositories
             }
         }
 
-        public double updateBalance(int id, double transfer, SqliteConnection connection, SqliteTransaction transaction)
+        public double UpdateBalance(int id, double transfer, SqliteConnection connection, SqliteTransaction transaction)
         {
             // 1. Get current balance using the shared connection
             var selectCmd = connection.CreateCommand();
@@ -100,6 +136,25 @@ namespace Bank_back.repositories
             updateCmd.ExecuteNonQuery();
 
             return newDeposit;
+        }
+
+        public bool ExistsByAccountId(int id)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                var selectCmd = connection.CreateCommand();
+                selectCmd.CommandText = "SELECT 1 FROM Account WHERE id = @id";
+                selectCmd.Parameters.AddWithValue("@id", id);
+
+                var result = selectCmd.ExecuteScalar();
+                return result != null;
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException($"Database error while checking account existence: {ex.Message}", ex);
+            }
         }
     }
 }
