@@ -89,7 +89,7 @@ namespace Bank_business.repositories
                 connection.Open();
                 Console.WriteLine("connected");
                 var insertCmd = connection.CreateCommand();
-                insertCmd.CommandText = "INSERT INTO User (id, first_name, last_name, password_hash) VALUES (@id, @first_name, @last_name, @password_hash);";
+                insertCmd.CommandText = "INSERT INTO User (id, first_name, last_name, password_hash) VALUES (@id, @first_name, @last_name, @password_hash) RETURNING id, first_name, last_name, password_hash;";
                 insertCmd.Parameters.AddWithValue("@id", user.Id);
                 insertCmd.Parameters.AddWithValue("@first_name", user.First_name);
                 insertCmd.Parameters.AddWithValue("@last_name", user.Last_name);
