@@ -18,6 +18,6 @@ CREATE TABLE "User" (
 	"id"	INTEGER NOT NULL,
 	"first_name"	TEXT NOT NULL,
 	"last_name"	TEXT NOT NULL,
-	"password_hash"	INTEGER NOT NULL,
+	"password_hash"	TEXT NOT NULL,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
