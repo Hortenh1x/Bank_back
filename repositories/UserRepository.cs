@@ -53,26 +53,22 @@ namespace Bank_back.repositories
                 connection.Open();
                 Console.WriteLine("connected");
                 var selectCmd = connection.CreateCommand();
-                selectCmd.CommandText = "SELECT a.id FROM Account a, User u WHERE a.user_id = @id AND u.id = @id";
+                selectCmd.CommandText = "SELECT a.id FROM Account a WHERE a.user_id = @id";
                 selectCmd.Parameters.AddWithValue("@id", id);
 
                 using var reader = selectCmd.ExecuteReader();
-                if (reader.Read())
+                var ids = new List<int>();
+                while (reader.Read())
                 {
-                    int[] ids = { };
-                    var i = reader.FieldCount;
-                    int read_id;
-                    for (int j = 0; j < i; j++)
-                    {
-                        read_id = reader.GetInt32(i);
-                        ids.Append(read_id);
-                    }
-                    return ids;
+                    ids.Add(reader.GetInt32(0));
                 }
-                else
+
+                if (ids.Count == 0)
                 {
                     throw new KeyNotFoundException($"Accounts of user with id {id} not found");
                 }
+
+                return ids.ToArray();
             }
             catch (SqliteException ex)
             {

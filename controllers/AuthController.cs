@@ -13,12 +13,10 @@ namespace Bank_back.controllers
     {
         private readonly AuthService authService;
         private readonly UserService userService;
-        private readonly ICurrentUserService currentUserService;
 
-        public AuthController(AuthService authService, ICurrentUserService currentUserService, UserService userService)
+        public AuthController(AuthService authService, UserService userService)
         {
             this.authService = authService;
-            this.currentUserService = currentUserService;
             this.userService = userService;
         }
 
@@ -53,7 +51,7 @@ namespace Bank_back.controllers
             try
             {
                 User user = userService.RegisterUser(registerRequest.First_name, registerRequest.Last_name, registerRequest.Password_hash);
-                return Ok(new { id = user.Id, first_name = user.First_name, user.Last_name });
+                return Ok(new { id = user.Id, first_name = user.First_name, user.Last_name, message = "You can now login" });
             }
             catch (ArgumentException ex)
             {

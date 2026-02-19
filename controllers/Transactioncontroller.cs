@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Bank_back.Services;
 using Bank_back.services;
 using Bank_back.entities;
@@ -78,8 +79,10 @@ namespace Bank_back.controllers
 
     internal sealed class TransferRequest
     {
-        public required double Amount { get; set; }
-        public required int Target { get; set; }
+        [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0.")]
+        public double Amount { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Target account id must be greater than 0.")]
+        public int Target { get; set; }
     }
 
     internal sealed class TransferResponse

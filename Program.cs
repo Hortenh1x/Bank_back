@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Bank_back.repositories;
 using Bank_back.Services;
+using Bank_back.services;
 
 namespace Bank_back
 {
@@ -14,7 +15,12 @@ namespace Bank_back
 
             //use 'Scoped' so a new instance is created per HTTP request
             builder.Services.AddScoped<UserRepository>();
+            builder.Services.AddScoped<AccountRepository>();
+            builder.Services.AddScoped<TransactionRepository>();
             builder.Services.AddScoped<AuthService>();
+            builder.Services.AddScoped<AccountService>();
+            builder.Services.AddScoped<TransactionService>();
+            builder.Services.AddScoped<UserService>();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
