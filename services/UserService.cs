@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bank_back.entities;
+using Bank_back.Entities;
 using Bank_back.repositories;
 using Bank_back.Services;
 
 namespace Bank_back.services
 {
-    internal class UserService
+    public class UserService
     {
         private readonly UserRepository userRepository;
         private readonly ICurrentUserService currentUserService;
@@ -44,6 +45,19 @@ namespace Bank_back.services
                 return me;
             }
             throw new KeyNotFoundException("User with this id does not exist");
+        }
+
+        public Account[] GetAccountsByUserId(int userId)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("Invalid id");
+            }
+            if (userRepository.ExistsByUserId(userId))
+            {
+                return userRepository.GetAccountsByUserId(userId);
+            }
+            throw new KeyNotFoundException("User with this id not found");
         }
     }
 }

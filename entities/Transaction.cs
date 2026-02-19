@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Bank_back.entities
 {
-    internal class Transaction
+    public class Transaction
     {
         private int id;
         private string date_time;
@@ -62,11 +62,11 @@ namespace Bank_back.entities
             set { type = value; }
         }
     }
+    public enum TransactionType
+    {
+        Deposit,
+        Withdrawal,
+        Transfer
+    }
 }
 
-enum TransactionType
-{
-    Deposit,
-    Withdrawal,
-    Transfer
-}

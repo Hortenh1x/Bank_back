@@ -11,7 +11,7 @@ namespace Bank_back.controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    internal class TransactionController : ControllerBase
+    public class TransactionController : ControllerBase
     {
         private readonly TransactionService transactionService;
         private readonly AccountService accountService;
@@ -32,18 +32,22 @@ namespace Bank_back.controllers
                 return BadRequest(new { message = "Transfer amount must be greater than 0" });
             }
 
-            if (request.Target <= 0)
+            if (request.To_id <= 0)
             {
                 return BadRequest(new { message = "You must provide a valid target account id" });
+            }
+            if (!accountService.BelongsById(request.From_id))
+            {
+                return BadRequest(new { message = "You can't make a transaction from the account, that's not yours" });
             }
 
             try
             {
-                int userId = currentUserService.GetUserId();
-                int targetId = request.Target;
+
+                int targetId = request.To_id;
                 double amount = request.Amount;
 
-                if (targetId == userId)
+                if (accountService.BelongsById(currentUserService.GetUserId()))
                 {
                     return BadRequest(new { message = "You can't transfer money to yourself" });
                 }
@@ -53,7 +57,7 @@ namespace Bank_back.controllers
                     return NotFound(new { message = "Target account not found" });
                 }
 
-                Transaction transaction = transactionService.PerformTransaction(targetId, amount, userId);
+                Transaction transaction = transactionService.PerformTransaction(targetId, amount, request.From_id);
                 var response = new TransferResponse
                 {
                     TransactionId = transaction.Id,
@@ -77,15 +81,16 @@ namespace Bank_back.controllers
         }
     }
 
-    internal sealed class TransferRequest
+    public sealed class TransferRequest
     {
+        public int To_id { get; set; }
         [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0.")]
         public double Amount { get; set; }
         [Range(1, int.MaxValue, ErrorMessage = "Target account id must be greater than 0.")]
-        public int Target { get; set; }
+        public int From_id { get; set; }
     }
 
-    internal sealed class TransferResponse
+    public sealed class TransferResponse
     {
         public int TransactionId { get; set; }
         public string DateTime { get; set; } = string.Empty;
@@ -94,6 +99,4 @@ namespace Bank_back.controllers
         public int ToId { get; set; }
         public string Type { get; set; } = string.Empty;
     }
-
-
 }

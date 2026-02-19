@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace Bank_back.Services
 {
-    internal interface ICurrentUserService
+    public interface ICurrentUserService
     {
         int GetUserId();
     }
 
-    internal sealed class CurrentUserService : ICurrentUserService
+    public sealed class CurrentUserService : ICurrentUserService
     {
         private readonly IHttpContextAccessor httpContextAccessor;
 

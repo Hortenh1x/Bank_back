@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using Bank_back.Services;
 using Bank_back.services;
 using Bank_back.entities;
+using Bank_back.Entities;
 
 
 namespace Bank_back.controllers
@@ -11,7 +12,7 @@ namespace Bank_back.controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    internal class AccountController : ControllerBase
+    public class AccountController : ControllerBase
     {
         private readonly AccountService accountService;
         private readonly ICurrentUserService currentUserService;
@@ -24,13 +25,23 @@ namespace Bank_back.controllers
             this.userService = userService;
         }
 
-        [HttpGet("show-balance")]
-        public IActionResult GetBalance()
+        [HttpGet("show-balance/{accountId}")]
+        public IActionResult GetBalance(int accountId)
         {
+            if (accountId <= 0)
+            {
+                return BadRequest(new { message = "Please enter a correct account id" });
+            }
+
+            if (!accountService.BelongsById(accountId))
+            {
+                return BadRequest(new { message = "You can't view the account, that's not yours" });
+            }
+
             try
             {
                 int userId = currentUserService.GetUserId();
-                double balance = accountService.CheckBalance(userId);
+                double balance = accountService.CheckBalance(accountId);
                 return Ok(new { currentBalance = balance });
             }
             catch (UnauthorizedAccessException ex)
@@ -47,8 +58,6 @@ namespace Bank_back.controllers
             }
         }
 
-
-
         [HttpPost("deposit-money")]
         public IActionResult DepositMoney([FromBody] DepositRequest request)
         {
@@ -56,13 +65,22 @@ namespace Bank_back.controllers
             {
                 return BadRequest(new { message = "Deposit amount must be greater than 0" });
             }
+            if (request.To_id <= 0)
+            {
+                return BadRequest(new { message = "You must enter a corret account id" });
+            }
+            if (!accountService.BelongsById(request.To_id))
+            {
+                return BadRequest(new { message = "You can't deposit money to the account, that's not yours" });
+            }
+
 
             try
             {
-                int userId = currentUserService.GetUserId();
-                double newBalance = accountService.PerformDeposit(userId, request.Amount);
-                return Ok(new { id = userId, currentBalance = newBalance });
+                double newBalance = accountService.PerformDeposit(request.To_id, request.Amount);
+                return Ok(new { id = request.To_id, currentBalance = newBalance });
             }
+
             catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -88,12 +106,19 @@ namespace Bank_back.controllers
             {
                 return BadRequest(new { message = "Withdrawal amount must be greater than 0" });
             }
+            if (request.From_id <= 0)
+            {
+                return BadRequest(new { message = "You must enter a corret account id" });
+            }
+            if (!accountService.BelongsById(request.From_id))
+            {
+                return BadRequest(new { message = "You can't withdraw money from the account, that's not yours" });
+            }
 
             try
             {
-                int userId = currentUserService.GetUserId();
-                double newBalance = accountService.PerformWithdrawal(userId, request.Amount);
-                return Ok(new { id = userId, currentBalance = newBalance });
+                double newBalance = accountService.PerformWithdrawal(request.From_id, request.Amount);
+                return Ok(new { id = request.From_id, currentBalance = newBalance });
             }
             catch (ArgumentException ex)
             {
@@ -112,55 +137,26 @@ namespace Bank_back.controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-        [HttpGet("me")]
-        public IActionResult ShowMe()
+
+        public sealed class DepositRequest
         {
-            try
-            {
-                int userId = currentUserService.GetUserId();
-                UserReturn user = userService.ShowMe(userId);
-                var response = new AccountResponse
-                {
-                    Id = user.Id,
-                    First_name = user.First_name,
-                    Last_name = user.Last_name,
-                    Accounts = user.ToStringAccounts()
-                };
-                return Ok(response);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
-
-
+            public int To_id { get; set; }
+            [Range(0.01, 1E+9, ErrorMessage = "Amount must be greater than and lower than 1 Billion.")]
+            public double Amount { get; set; }
         }
-    }
-    internal sealed class DepositRequest
-    {
-        [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0.")]
-        public double Amount { get; set; }
-    }
 
-    internal sealed class WithdrawalRequest
-    {
-        [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0.")]
-        public double Amount { get; set; }
-    }
+        public sealed class WithdrawalRequest
+        {
+            public int From_id { get; set; }
+            [Range(0.01, 1E+9, ErrorMessage = "Amount must be greater than and lower than 1 Billion.")]
+            public double Amount { get; set; }
+        }
 
-    internal sealed class AccountResponse
-    {
-        public required int Id { get; set; }
-        public required string First_name { get; set; }
-        public required string Last_name { get; set; }
-        public required string Accounts { get; set; }
+
+
+        public sealed class CheckRequest
+        {
+            public int AccountId { get; set; }
+        }
     }
 }

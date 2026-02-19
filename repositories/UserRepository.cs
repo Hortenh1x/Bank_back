@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 
 namespace Bank_back.repositories
 {
-    internal class UserRepository
+    public class UserRepository
     {
         string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
 
@@ -73,6 +73,37 @@ namespace Bank_back.repositories
             catch (SqliteException ex)
             {
                 throw new InvalidOperationException($"Database error while finding users accounts: {ex.Message}", ex);
+            }
+        }
+
+        public Account[] GetAccountsByUserId(int id)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                Console.WriteLine("connected");
+                var selectCmd = connection.CreateCommand();
+                selectCmd.CommandText = "SELECT a.id, a.deposit, a.user_id FROM Account a WHERE a.user_id = @id";
+                selectCmd.Parameters.AddWithValue("@id", id);
+
+                using var reader = selectCmd.ExecuteReader();
+                var accs = new List<Account>();
+                while (reader.Read())
+                {
+                    var acc = new Account(reader.GetInt32(0), reader.GetDouble(1), reader.GetInt32(2));
+                    accs.Add(acc);
+                }
+                if (accs.Count == 0)
+                {
+                    throw new KeyNotFoundException($"Accounts of user with id {id} not found");
+                }
+
+                return accs.ToArray();
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException($"Database error while finding account: {ex.Message}", ex);
             }
         }
 
@@ -143,6 +174,41 @@ namespace Bank_back.repositories
             catch (SqliteException ex)
             {
                 throw new InvalidOperationException($"Database error while creating user: {ex.Message}", ex);
+            }
+        }
+        public bool CheckPassword(int id, string password)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                Console.WriteLine("connected");
+                var selectCmd = connection.CreateCommand();
+                selectCmd.CommandText = "SELECT u.password_hash FROM User u WHERE id = @id";
+                selectCmd.Parameters.AddWithValue("@id", id);
+
+                using var reader = selectCmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    var read_password = reader.GetString(0);
+                    if (read_password == password)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException($"Database error while checking user existence: {ex.Message}", ex);
             }
         }
     }

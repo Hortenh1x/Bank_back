@@ -10,7 +10,7 @@ using Transaction = Bank_back.entities.Transaction;
 
 namespace Bank_back.repositories
 {
-    internal class TransactionRepository
+    public class TransactionRepository
     {
         string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
 
@@ -60,7 +60,7 @@ namespace Bank_back.repositories
                 insertCmd.CommandText = @"
                     INSERT INTO [Transaction] (date_time, deposit, from_id, to_id, type) 
                     VALUES (@date_time, @deposit, @from_id, @to_id, @type)
-                    RETURNING id, date_time, deposit, from_id, to_id;";
+                    RETURNING id, date_time, deposit, from_id, to_id, type;";
 
                 insertCmd.Parameters.AddWithValue("@date_time", timestamp);
                 insertCmd.Parameters.AddWithValue("@deposit", deposit);

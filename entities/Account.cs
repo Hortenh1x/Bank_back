@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bank_back.Entities
 {
-    internal class Account
+    public class Account
     {
         private int id;
         private double deposit;

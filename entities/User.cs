@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bank_back.entities
 {
-    internal class User
+    public class User
     {
         private int id;
         private string first_name;

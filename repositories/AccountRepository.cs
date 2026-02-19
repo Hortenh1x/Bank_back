@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Bank_back.repositories
 {
-    internal class AccountRepository
+    public class AccountRepository
     {
         string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
 
@@ -106,6 +106,8 @@ namespace Bank_back.repositories
             }
         }
 
+
+
         public double UpdateBalance(int id, double transfer, SqliteConnection connection, SqliteTransaction transaction)
         {
             // 1. Get current balance using the shared connection
@@ -154,6 +156,58 @@ namespace Bank_back.repositories
             catch (SqliteException ex)
             {
                 throw new InvalidOperationException($"Database error while checking account existence: {ex.Message}", ex);
+            }
+        }
+
+        public Account AddAccount(int user_id)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                var insertCmd = connection.CreateCommand();
+                insertCmd.CommandText = "INSERT INTO Account (deposit, user_id) VALUES (0, @user_id) RETURNING id, deposit, user_id;";
+                insertCmd.Parameters.AddWithValue("@user_id", user_id);
+
+                using var reader = insertCmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    var read_id = reader.GetInt32(0);
+                    var read_deposit = reader.GetDouble(1);
+                    var read_user_id = reader.GetInt32(2);
+                    return new Account(read_id, read_deposit, read_user_id);
+                }
+                else
+                {
+                    throw new KeyNotFoundException($"Account not found");
+                }
+
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException($"Database error while creating account: {ex.Message}", ex);
+            }
+        }
+        public bool BelongsToId(int userId, int accountId)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+
+                var selectCmd = connection.CreateCommand();
+
+                selectCmd.CommandText = "SELECT 1 FROM Account WHERE id = @accountId AND user_id = @userId LIMIT 1";
+                selectCmd.Parameters.AddWithValue("@accountId", accountId);
+                selectCmd.Parameters.AddWithValue("@userId", userId);
+
+                var result = selectCmd.ExecuteScalar();
+
+                return result != null;
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException($"Database error while verifying ownership: {ex.Message}", ex);
             }
         }
     }

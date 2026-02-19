@@ -9,7 +9,7 @@ namespace Bank_back.controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    internal class AuthController : ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly AuthService authService;
         private readonly UserService userService;
@@ -85,7 +85,7 @@ namespace Bank_back.controllers
         }
     }
 
-    internal sealed class RegisterRequest
+    public sealed class RegisterRequest
     {
         public required string First_name { get; set; }
         public required string Last_name { get; set; }
@@ -93,7 +93,7 @@ namespace Bank_back.controllers
         public required string Password_hash_repeat { get; set; }
     }
 
-    internal sealed class LoginRequest
+    public sealed class LoginRequest
     {
         public required int Id { get; set; }
         public required string Password_hash { get; set; }

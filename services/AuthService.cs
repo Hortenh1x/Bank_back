@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Bank_back.Services
 {
-    internal class AuthService
+    public class AuthService
     {
         private readonly UserRepository _userRepository;
         private readonly IConfiguration _configuration;
@@ -29,7 +29,7 @@ namespace Bank_back.Services
             // 1. Verify user exists and password matches
             var user = _userRepository.FindUserById(id);
 
-            if (user == null || user.Password_hash != password_hash)
+            if (user == null || !_userRepository.CheckPassword(id, password_hash))
             {
                 throw new InvalidOperationException("Users id or password don't match");
             }
