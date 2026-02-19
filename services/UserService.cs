@@ -7,6 +7,7 @@ using Bank_back.entities;
 using Bank_back.Entities;
 using Bank_back.repositories;
 using Bank_back.Services;
+using Bank_back.utils;
 
 namespace Bank_back.services
 {
@@ -14,27 +15,31 @@ namespace Bank_back.services
     {
         private readonly UserRepository userRepository;
         private readonly ICurrentUserService currentUserService;
+        private readonly IConfiguration _configuration;
 
-        public UserService(UserRepository userRepository, ICurrentUserService currentUserService)
+        public UserService(UserRepository userRepository, ICurrentUserService currentUserService, IConfiguration _configuration)
         {
             this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+            this._configuration = _configuration ?? throw new ArgumentNullException(nameof(_configuration));
         }
 
-        public User RegisterUser(string first_name, string last_name, string password_hash)
+        public User RegisterUser(string first_name, string last_name, string password)
         {
-            // if (userRepository.ExistsByUserId(id))
-            // {
-            //     throw new ArgumentException("User with this id already exists");
-            // }
+            if (string.IsNullOrEmpty(password))
+            {
+                throw new ArgumentNullException("Password must be presented");
+            }
+            var pepper = _configuration["ApplicationSettings:Password_Pepper"];
 
-            // User user = new User(id, first_name, last_name, password_hash);
+            if (string.IsNullOrEmpty(pepper))
+            {
+                throw new InvalidOperationException("Password pepper is missing from configuration.");
+            }
+            var password_hash = PasswordHasher.HashPassword(password, pepper);
+
             return userRepository.SaveUser(first_name, last_name, password_hash);
         }
-        // public int GetUserId()
-        // {
-        //     return currentUserService.GetUserId();
-        // }
 
         public UserReturn ShowMe(int id)
         {

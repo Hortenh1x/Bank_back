@@ -78,6 +78,10 @@ namespace Bank_back.controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });

@@ -1,5 +1,6 @@
 ﻿using Bank_back.entities;
 using Bank_back.repositories;
+using Bank_back.utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -24,17 +25,21 @@ namespace Bank_back.Services
             _configuration = configuration;
         }
 
-        public string Login(int id, string password_hash)
+        public string Login(int id, string password)
         {
-            // 1. Verify user exists and password matches
-            var user = _userRepository.FindUserById(id);
+            var user = _userRepository.FindUserById(id) ?? throw new InvalidOperationException("User not found");
+            var password_hash = _userRepository.GetHashedPassword(id);
+            var pepper = _configuration["ApplicationSettings:Password_Pepper"];
 
-            if (user == null || !_userRepository.CheckPassword(id, password_hash))
+            if (string.IsNullOrEmpty(pepper))
             {
-                throw new InvalidOperationException("Users id or password don't match");
+                throw new InvalidOperationException("Password pepper is missing from configuration.");
             }
 
-            // 2. Generate and return the token
+            if (!PasswordHasher.VerifyPassword(password, password_hash, pepper))
+            {
+                throw new ArgumentException("Wrong password!");
+            }
             return GenerateToken(user);
         }
 
@@ -50,7 +55,6 @@ namespace Bank_back.Services
 
             var key = Encoding.UTF8.GetBytes(secretKey);
 
-            // Define the claims (User data stored inside the token)
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),

@@ -5,6 +5,8 @@ using Bank_back.repositories;
 using Bank_back.Services;
 using Bank_back.services;
 using Microsoft.OpenApi.Models;
+using Bank_back.utils;
+
 
 namespace Bank_back
 {
@@ -12,6 +14,12 @@ namespace Bank_back
     {
         public static void Main(string[] args)
         {
+            string myNewPepper = CryptoUtility.GenerateSecureString(32);
+            Console.WriteLine(myNewPepper);
+
+            string myNewSalt = CryptoUtility.GenerateSecureString(16);
+            Console.WriteLine(myNewSalt);
+
             var builder = WebApplication.CreateBuilder(args);
 
             //use 'Scoped' so a new instance is created per HTTP request
