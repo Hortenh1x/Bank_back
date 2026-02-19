@@ -211,5 +211,31 @@ namespace Bank_back.repositories
                 throw new InvalidOperationException($"Database error while checking user existence: {ex.Message}", ex);
             }
         }
+        public string GetHashedPassword(int user_id)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                Console.WriteLine("connected");
+                var selectCmd = connection.CreateCommand();
+                selectCmd.CommandText = "SELECT u.password_hash FROM User u WHERE id = @id";
+                selectCmd.Parameters.AddWithValue("@id", user_id);
+
+                using var reader = selectCmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    return reader.GetString(0);
+
+                }
+
+                throw new KeyNotFoundException("Failed to get users password");
+
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException($"Database error while checking user existence: {ex.Message}", ex);
+            }
+        }
     }
 }

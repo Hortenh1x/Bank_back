@@ -14,11 +14,11 @@ namespace Bank_back
     {
         public static void Main(string[] args)
         {
-            string myNewPepper = CryptoUtility.GenerateSecureString(32);
-            Console.WriteLine(myNewPepper);
+            // string myNewPepper = CryptoUtility.GenerateSecureString(32);
+            // Console.WriteLine(myNewPepper);
 
-            string myNewSalt = CryptoUtility.GenerateSecureString(16);
-            Console.WriteLine(myNewSalt);
+            // string myNewSalt = CryptoUtility.GenerateSecureString(16);
+            // Console.WriteLine(myNewSalt);
 
             var builder = WebApplication.CreateBuilder(args);
 
