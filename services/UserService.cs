@@ -20,19 +20,30 @@ namespace Bank_back.services
             this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         }
 
-        public User RegisterUser(int id, string first_name, string last_name, string password_hash)
+        public User RegisterUser(string first_name, string last_name, string password_hash)
+        {
+            // if (userRepository.ExistsByUserId(id))
+            // {
+            //     throw new ArgumentException("User with this id already exists");
+            // }
+
+            // User user = new User(id, first_name, last_name, password_hash);
+            return userRepository.SaveUser(first_name, last_name, password_hash);
+        }
+        // public int GetUserId()
+        // {
+        //     return currentUserService.GetUserId();
+        // }
+
+        public UserReturn ShowMe(int id)
         {
             if (userRepository.ExistsByUserId(id))
             {
-                throw new ArgumentException("User with this id already exists");
+                User user = userRepository.FindUserById(id);
+                UserReturn me = new UserReturn(user.Id, user.First_name, user.Last_name, userRepository.FindUsersAccounts(id));
+                return me;
             }
-
-            User user = new User(id, first_name, last_name, password_hash);
-            return userRepository.SaveUser(user);
-        }
-        public int GetUserId()
-        {
-            return currentUserService.GetUserId();
+            throw new KeyNotFoundException("User with this id does not exist");
         }
     }
 }

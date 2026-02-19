@@ -78,8 +78,8 @@ namespace Bank_back.controllers
 
     internal sealed class TransferRequest
     {
-        public double Amount { get; set; }
-        public int Target { get; set; }
+        public required double Amount { get; set; }
+        public required int Target { get; set; }
     }
 
     internal sealed class TransferResponse

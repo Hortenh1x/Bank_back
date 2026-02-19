@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Bank_back.Services;
+using Bank_back.services;
+using Bank_back.entities;
+
 
 namespace Bank_back.controllers
 {
@@ -11,20 +14,30 @@ namespace Bank_back.controllers
     {
         private readonly AccountService accountService;
         private readonly ICurrentUserService currentUserService;
+        private readonly UserService userService;
 
-        public AccountController(AccountService accountService, ICurrentUserService currentUserService)
+        public AccountController(AccountService accountService, ICurrentUserService currentUserService, UserService userService)
         {
             this.accountService = accountService;
             this.currentUserService = currentUserService;
+            this.userService = userService;
         }
 
         [HttpGet("show-balance")]
         public IActionResult GetBalance()
         {
-            int userId = currentUserService.GetUserId();
-            double balance = accountService.CheckBalance(userId);
-            return Ok(new { id = userId, currentBalance = balance });
+            try
+            {
+                int userId = currentUserService.GetUserId();
+                double balance = accountService.CheckBalance(userId);
+                return Ok(new { currentBalance = balance });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
 
 
         [HttpPost("deposit-money")]
@@ -58,7 +71,7 @@ namespace Bank_back.controllers
             try
             {
                 int userId = currentUserService.GetUserId();
-                double newBalance = accountService.PerformDeposit(userId, request.Amount);
+                double newBalance = accountService.PerformWithdrawal(userId, request.Amount);
                 return Ok(new { id = userId, currentBalance = newBalance });
             }
             catch (ArgumentException ex)
@@ -66,17 +79,45 @@ namespace Bank_back.controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpGet("me")]
+        public IActionResult ShowMe()
+        {
+            try
+            {
+                int userId = currentUserService.GetUserId();
+                UserReturn user = userService.ShowMe(userId);
+                var response = new AccountResponse
+                {
+                    Id = user.Id,
+                    First_name = user.First_name,
+                    Last_name = user.Last_name,
+                    Accounts = user.ToStringAccounts()
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+
+
+        }
     }
     internal sealed class DepositRequest
     {
-        public double Amount { get; set; }
+        public required double Amount { get; set; }
     }
 
     internal sealed class WithdrawalRequest
     {
-        public double Amount { get; set; }
+        public required double Amount { get; set; }
     }
 
-
-
+    internal sealed class AccountResponse
+    {
+        public required int Id { get; set; }
+        public required string First_name { get; set; }
+        public required string Last_name { get; set; }
+        public required string Accounts { get; set; }
+    }
 }

@@ -45,7 +45,41 @@ namespace Bank_back.repositories
                 throw new InvalidOperationException($"Database error while finding user: {ex.Message}", ex);
             }
         }
-        
+        public int[] FindUsersAccounts(int id)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                Console.WriteLine("connected");
+                var selectCmd = connection.CreateCommand();
+                selectCmd.CommandText = "SELECT a.id FROM Account a, User u WHERE a.user_id = @id AND u.id = @id";
+                selectCmd.Parameters.AddWithValue("@id", id);
+
+                using var reader = selectCmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    int[] ids = { };
+                    var i = reader.FieldCount;
+                    int read_id;
+                    for (int j = 0; j < i; j++)
+                    {
+                        read_id = reader.GetInt32(i);
+                        ids.Append(read_id);
+                    }
+                    return ids;
+                }
+                else
+                {
+                    throw new KeyNotFoundException($"Accounts of user with id {id} not found");
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException($"Database error while finding users accounts: {ex.Message}", ex);
+            }
+        }
+
         public bool ExistsByUserId(int id)
         {
             try
@@ -82,7 +116,7 @@ namespace Bank_back.repositories
             }
         }
 
-        public User SaveUser(User user)
+        public User SaveUser(string first_name, string last_name, string password_hash)
         {
             try
             {
@@ -90,11 +124,10 @@ namespace Bank_back.repositories
                 connection.Open();
                 Console.WriteLine("connected");
                 var insertCmd = connection.CreateCommand();
-                insertCmd.CommandText = "INSERT INTO User (id, first_name, last_name, password_hash) VALUES (@id, @first_name, @last_name, @password_hash) RETURNING id, first_name, last_name, password_hash;";
-                insertCmd.Parameters.AddWithValue("@id", user.Id);
-                insertCmd.Parameters.AddWithValue("@first_name", user.First_name);
-                insertCmd.Parameters.AddWithValue("@last_name", user.Last_name);
-                insertCmd.Parameters.AddWithValue("@password_hash", user.Password_hash);
+                insertCmd.CommandText = "INSERT INTO User (first_name, last_name, password_hash) VALUES (@first_name, @last_name, @password_hash) RETURNING id, first_name, last_name, password_hash;";
+                insertCmd.Parameters.AddWithValue("@first_name", first_name);
+                insertCmd.Parameters.AddWithValue("@last_name", last_name);
+                insertCmd.Parameters.AddWithValue("@password_hash", password_hash);
 
                 using var reader = insertCmd.ExecuteReader();
                 if (reader.Read())
