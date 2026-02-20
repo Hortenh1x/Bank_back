@@ -137,6 +137,43 @@ namespace Bank_back.controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+        [HttpGet("show-accounts-transactions/{accountId}")]
+        public IActionResult SchowAccountsTransactions(int accountId)
+        {
+
+            if (accountId <= 0)
+            {
+                return BadRequest(new { message = "Please enter a correct account id" });
+            }
+
+            if (!accountService.BelongsById(accountId))
+            {
+                return BadRequest(new { message = "You can't view the account, that's not yours" });
+            }
+
+
+            try
+            {
+
+                TransactionResponce[] transactions = accountService.ShowAccountsTransactions(accountId);
+
+                return Ok(transactions);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+
+        }
+
 
         public sealed class DepositRequest
         {

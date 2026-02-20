@@ -69,4 +69,3 @@ namespace Bank_back.entities
         Transfer
     }
 }
-

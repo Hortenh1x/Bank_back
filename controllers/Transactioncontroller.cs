@@ -15,13 +15,11 @@ namespace Bank_back.controllers
     {
         private readonly TransactionService transactionService;
         private readonly AccountService accountService;
-        private readonly ICurrentUserService currentUserService;
 
-        public TransactionController(TransactionService transactionService, AccountService accountService, ICurrentUserService currentUserService)
+        public TransactionController(TransactionService transactionService, AccountService accountService)
         {
             this.transactionService = transactionService;
             this.accountService = accountService;
-            this.currentUserService = currentUserService;
         }
 
         [HttpPost("transfer-money")]
@@ -30,6 +28,11 @@ namespace Bank_back.controllers
             if (request == null || request.Amount <= 0)
             {
                 return BadRequest(new { message = "Transfer amount must be greater than 0" });
+            }
+
+            if (request.From_id <= 0)
+            {
+                return BadRequest(new { message = "You must provide a valid source account id" });
             }
 
             if (request.To_id <= 0)
@@ -47,7 +50,7 @@ namespace Bank_back.controllers
                 int targetId = request.To_id;
                 double amount = request.Amount;
 
-                if (accountService.BelongsById(currentUserService.GetUserId()))
+                if (targetId == request.From_id || accountService.BelongsById(targetId))
                 {
                     return BadRequest(new { message = "You can't transfer money to yourself" });
                 }
@@ -86,7 +89,6 @@ namespace Bank_back.controllers
         public int To_id { get; set; }
         [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0.")]
         public double Amount { get; set; }
-        [Range(1, int.MaxValue, ErrorMessage = "Target account id must be greater than 0.")]
         public int From_id { get; set; }
     }
 
@@ -98,5 +100,7 @@ namespace Bank_back.controllers
         public int FromId { get; set; }
         public int ToId { get; set; }
         public string Type { get; set; } = string.Empty;
+        // public string To_owner { get; set; } = string.Empty;
+        // public string From_owner { get; set; } = string.Empty;
     }
 }

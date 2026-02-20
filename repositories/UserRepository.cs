@@ -5,15 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Bank_back.Entities;
 using Bank_back.entities;
+using Bank_back.utils;
 using Microsoft.Data.Sqlite;
 
 namespace Bank_back.repositories
 {
     public class UserRepository
     {
-        string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
+        private readonly string connectionString;
 
-        public UserRepository() { }
+        public UserRepository(IConfiguration configuration)
+        {
+            connectionString = DatabaseConnection.ResolveConnectionString(configuration);
+        }
 
         public User FindUserById(int id)
         {

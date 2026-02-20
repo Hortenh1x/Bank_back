@@ -15,14 +15,16 @@ namespace Bank_back.Services
         private readonly UserRepository userRepository;
         DateTime utcDate = DateTime.UtcNow;
         private readonly ICurrentUserService currentUserService;
+        private readonly string connectionString;
 
 
-        public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository, UserRepository userRepository, ICurrentUserService currentUserService)
+        public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository, UserRepository userRepository, ICurrentUserService currentUserService, IConfiguration configuration)
         {
             this.accountRepository = accountRepository;
             this.transactionRepository = transactionRepository;
             this.userRepository = userRepository;
             this.currentUserService = currentUserService;
+            this.connectionString = Bank_back.utils.DatabaseConnection.ResolveConnectionString(configuration);
         }
 
         public double PerformDeposit(int to_id, double amount)
@@ -36,7 +38,7 @@ namespace Bank_back.Services
                 throw new UnauthorizedAccessException("You do not have permission to deposit to this account.");
             }
 
-            using var connection = new SqliteConnection(@"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db");
+            using var connection = new SqliteConnection(connectionString);
             connection.Open();
             using var dbTransaction = connection.BeginTransaction();
 
@@ -73,7 +75,7 @@ namespace Bank_back.Services
                 throw new UnauthorizedAccessException("You do not have permission to withdrawal from this account.");
             }
 
-            using var connection = new SqliteConnection(@"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db");
+            using var connection = new SqliteConnection(connectionString);
             connection.Open();
             using var dbTransaction = connection.BeginTransaction();
 
@@ -97,6 +99,19 @@ namespace Bank_back.Services
                 dbTransaction.Rollback();
                 throw;
             }
+        }
+
+        public TransactionResponce[] ShowAccountsTransactions(int accountId)
+        {
+            if (accountId <= 0)
+            {
+                throw new ArgumentException("Invalid id");
+            }
+            if (accountRepository.ExistsById(accountId))
+            {
+                return accountRepository.ShowAccountsTransactions(accountId);
+            }
+            throw new KeyNotFoundException("Account with this id not found");
         }
 
         public Account AddAccount(int user_id)

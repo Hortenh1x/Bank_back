@@ -5,6 +5,7 @@ using Bank_back.repositories;
 using Bank_back.Services;
 using Bank_back.services;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 using Bank_back.utils;
 
 
@@ -60,10 +61,12 @@ namespace Bank_back
                 };
             });
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
             builder.Services.AddAuthorization();
-
-            builder.Services.AddControllers();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
@@ -99,13 +102,9 @@ namespace Bank_back
             var app = builder.Build();
 
             // 3. MIDDLEWARE ORDER
-            app.UseHttpsRedirection();
-
             // Authentication must come BEFORE Authorization
             app.UseAuthentication();
-
-
-
+            app.UseHttpsRedirection();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -113,8 +112,6 @@ namespace Bank_back
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
-            app.UseHttpsRedirection();
 
             app.UseAuthorization();
 

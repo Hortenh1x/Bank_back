@@ -13,12 +13,14 @@ namespace Bank_back.services
         private readonly AccountRepository accountRepository;
         private readonly TransactionRepository transactionRepository;
         private readonly ICurrentUserService currentUserService;
+        private readonly string connectionString;
 
-        public TransactionService(AccountRepository accountRepository, TransactionRepository transactionRepository, ICurrentUserService currentUserService)
+        public TransactionService(AccountRepository accountRepository, TransactionRepository transactionRepository, ICurrentUserService currentUserService, IConfiguration configuration)
         {
             this.accountRepository = accountRepository;
             this.transactionRepository = transactionRepository;
             this.currentUserService = currentUserService;
+            this.connectionString = Bank_back.utils.DatabaseConnection.ResolveConnectionString(configuration);
         }
 
         public Transaction PerformTransaction(int to_id, double amount, int from_id)
@@ -31,7 +33,7 @@ namespace Bank_back.services
             {
                 throw new ArgumentException("Transaction must be greater than 0");
             }
-            using var connection = new SqliteConnection(@"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db");
+            using var connection = new SqliteConnection(connectionString);
 
             connection.Open();
             using var transaction = connection.BeginTransaction();

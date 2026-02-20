@@ -53,7 +53,7 @@ namespace Bank_back.controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-        [HttpPost("add-acount")]
+        [HttpPost("add-account")]
         public IActionResult AddAccount()
         {
             try
@@ -85,17 +85,13 @@ namespace Bank_back.controllers
             try
             {
                 var userId = currentUserService.GetUserId();
-                if (userId == 0)
+                if (userId <= 0)
                 {
                     return BadRequest("Invalid user id");
                 }
 
-                // 1. Get the array of accounts from the service
-                // Make sure to pass the userId into this method!
                 Account[] accounts = userService.GetAccountsByUserId(userId);
 
-                // 2. Return the array directly! 
-                // ASP.NET Core automatically converts this Account[] into a JSON array [ {..}, {..} ]
                 return Ok(accounts);
             }
             catch (UnauthorizedAccessException ex)

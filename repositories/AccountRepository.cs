@@ -6,12 +6,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Bank_back.repositories;
 
 namespace Bank_back.repositories
 {
     public class AccountRepository
     {
-        string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
+        private readonly string connectionString;
+        private readonly UserRepository userRepository;
+
+        public AccountRepository(IConfiguration configuration, UserRepository userRepository)
+        {
+            connectionString = Bank_back.utils.DatabaseConnection.ResolveConnectionString(configuration);
+            this.userRepository = userRepository;
+        }
 
         public Account FindAccountById(int id)
         {
@@ -208,6 +216,41 @@ namespace Bank_back.repositories
             catch (SqliteException ex)
             {
                 throw new InvalidOperationException($"Database error while verifying ownership: {ex.Message}", ex);
+            }
+        }
+        public TransactionResponce[] ShowAccountsTransactions(int account_id)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                Console.WriteLine("connected");
+                var selectCmd = connection.CreateCommand();
+                selectCmd.CommandText = "SELECT t.id, t.date_time, t.deposit, t.from_id, t.to_id, t.type FROM [Transaction] t WHERE from_id = @account_id OR to_id = @account_id ORDER BY t.date_time DESC";
+                selectCmd.Parameters.AddWithValue("@account_id", account_id);
+
+                using var reader = selectCmd.ExecuteReader();
+
+                var transactions = new List<TransactionResponce>();
+                while (reader.Read())
+                {
+                    var transaction = new Transaction(reader.GetInt32(0), reader.GetString(1), reader.GetDouble(2), reader.GetInt32(3), reader.GetInt32(4), (TransactionType)Enum.Parse(typeof(TransactionType), reader.GetString(5)));
+                    var from_owner = userRepository.FindUserById(FindAccountById(transaction.From_id).User_id).First_name + " " + userRepository.FindUserById(FindAccountById(transaction.From_id).User_id).Last_name;
+                    var to_owner = userRepository.FindUserById(FindAccountById(transaction.To_id).User_id).First_name + " " + userRepository.FindUserById(FindAccountById(transaction.To_id).User_id).Last_name;
+                    var transactionResponce = new TransactionResponce(transaction.Id, transaction.Date_time, transaction.Deposit, transaction.From_id, transaction.To_id, transaction.Type, from_owner, to_owner);
+                    transactions.Add(transactionResponce);
+                }
+                if (transactions.Count == 0)
+                {
+                    throw new KeyNotFoundException($"Transactions of account with id {account_id} not found");
+                }
+
+                return transactions.ToArray();
+
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException($"Database error while finding transaction: {ex.Message}", ex);
             }
         }
     }

@@ -12,7 +12,12 @@ namespace Bank_back.repositories
 {
     public class TransactionRepository
     {
-        string connectionString = @"Data Source=C:\Users\Trainee1\source\repos\Bank_db\bank_db.db";
+        private readonly string connectionString;
+
+        public TransactionRepository(IConfiguration configuration)
+        {
+            connectionString = Bank_back.utils.DatabaseConnection.ResolveConnectionString(configuration);
+        }
 
         public Transaction FindTransactionById(int id)
         {
@@ -22,7 +27,7 @@ namespace Bank_back.repositories
                 connection.Open();
                 Console.WriteLine("connected");
                 var selectCmd = connection.CreateCommand();
-                selectCmd.CommandText = "SELECT t.id, t.date_time, t.deposit, t.from_id, t.to_id FROM [Transaction] t WHERE id = @id";
+                selectCmd.CommandText = "SELECT t.id, t.date_time, t.deposit, t.from_id, t.to_id, t.type FROM [Transaction] t WHERE id = @id";
                 selectCmd.Parameters.AddWithValue("@id", id);
 
                 using var reader = selectCmd.ExecuteReader();
@@ -88,5 +93,7 @@ namespace Bank_back.repositories
                 throw new InvalidOperationException($"Database error: {ex.Message}", ex);
             }
         }
+
+
     }
 }
