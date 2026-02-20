@@ -30,8 +30,8 @@ namespace Bank_back.controllers
 
             if (string.IsNullOrWhiteSpace(registerRequest.First_name) ||
                 string.IsNullOrWhiteSpace(registerRequest.Last_name) ||
-                string.IsNullOrWhiteSpace(registerRequest.Password_hash) ||
-                string.IsNullOrWhiteSpace(registerRequest.Password_hash_repeat))
+                string.IsNullOrWhiteSpace(registerRequest.Password) ||
+                string.IsNullOrWhiteSpace(registerRequest.Password_repeat))
             {
                 return BadRequest(new { message = "Please fill all fields" });
             }
@@ -40,17 +40,17 @@ namespace Bank_back.controllers
             {
                 return BadRequest(new { message = "Your name must contain only Latin letters" });
             }
-            if (registerRequest.Password_hash.Length < 8 || registerRequest.Password_hash.Contains(" "))
+            if (registerRequest.Password.Length < 8 || registerRequest.Password.Contains(" "))
             {
                 return BadRequest(new { message = "Password must be at least 8 charachters long and not contain any spaces" });
             }
-            if (registerRequest.Password_hash != registerRequest.Password_hash_repeat)
+            if (registerRequest.Password != registerRequest.Password_repeat)
             {
                 return BadRequest(new { message = "Passwords do not match!" });
             }
             try
             {
-                User user = userService.RegisterUser(registerRequest.First_name, registerRequest.Last_name, registerRequest.Password_hash);
+                User user = userService.RegisterUser(registerRequest.First_name, registerRequest.Last_name, registerRequest.Password);
                 return Ok(new { id = user.Id, first_name = user.First_name, user.Last_name, message = "You can now login" });
             }
             catch (ArgumentException ex)
@@ -65,13 +65,13 @@ namespace Bank_back.controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest loginRequest)
         {
-            if (loginRequest == null || loginRequest.Id == 0 || string.IsNullOrWhiteSpace(loginRequest.Password_hash))
+            if (loginRequest == null || loginRequest.Id == 0 || string.IsNullOrWhiteSpace(loginRequest.Password))
             {
                 return BadRequest(new { message = "Please fill all spaces" });
             }
             try
             {
-                var token = authService.Login(loginRequest.Id, loginRequest.Password_hash);
+                var token = authService.Login(loginRequest.Id, loginRequest.Password);
                 return Ok(new { token });
             }
             catch (InvalidOperationException ex)
@@ -93,13 +93,13 @@ namespace Bank_back.controllers
     {
         public required string First_name { get; set; }
         public required string Last_name { get; set; }
-        public required string Password_hash { get; set; }
-        public required string Password_hash_repeat { get; set; }
+        public required string Password { get; set; }
+        public required string Password_repeat { get; set; }
     }
 
     public sealed class LoginRequest
     {
         public required int Id { get; set; }
-        public required string Password_hash { get; set; }
+        public required string Password { get; set; }
     }
 }
