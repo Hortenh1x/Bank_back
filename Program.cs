@@ -104,7 +104,12 @@ namespace Bank_back
             // 3. MIDDLEWARE ORDER
             // Authentication must come BEFORE Authorization
             app.UseAuthentication();
-            app.UseHttpsRedirection();
+
+            // Avoid warning "Failed to determine the https port for redirect" when app runs on HTTP-only profile.
+            if (ShouldUseHttpsRedirection(app.Configuration))
+            {
+                app.UseHttpsRedirection();
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -119,6 +124,23 @@ namespace Bank_back
             app.MapControllers();
 
             app.Run();
+        }
+
+        private static bool ShouldUseHttpsRedirection(IConfiguration configuration)
+        {
+            string? urls = configuration["ASPNETCORE_URLS"] ?? configuration["urls"];
+            if (!string.IsNullOrWhiteSpace(urls) &&
+                urls.Contains("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            string? httpsPorts =
+                configuration["ASPNETCORE_HTTPS_PORTS"] ??
+                configuration["HTTPS_PORT"] ??
+                configuration["https_port"];
+
+            return !string.IsNullOrWhiteSpace(httpsPorts);
         }
     }
 }
